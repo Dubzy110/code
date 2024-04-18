@@ -1,0 +1,5 @@
+node_modules\axios\dist\node\axios.cjs 
+
+fixed by changing
+
+const isBrotliSupported = false
