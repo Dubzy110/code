@@ -1,0 +1,9 @@
+.container {
+  padding-bottom: 50px;
+  display: flex;
+  flex-wrap: wrap;
+  flex-flow: row wrap;
+  margin: auto;
+  align-content: center;
+  justify-content: center;
+}

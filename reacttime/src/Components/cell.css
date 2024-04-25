@@ -1,0 +1,20 @@
+.cell {
+  background-color: lightgray;
+  border: 1px solid rgb(63, 63, 63);
+  text-align: center;
+  /* line-height: 50px; */
+  user-select: none;
+  -ms-user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+}
+
+.flagged-cell {
+  background-color: darkgrey;
+  border-color: green;
+}
+.revealed-cell {
+  background-color: gray;
+  font-weight: bolder;
+  color: crimson;
+}

@@ -1,0 +1,10 @@
+html {
+  background-color: rgb(52, 52, 119);
+  height: 100vh;
+  margin-bottom: auto;
+  align-content: center;
+}
+
+#root {
+  height: 100vh;
+}
