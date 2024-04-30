@@ -1,8 +1,6 @@
 import "./grid.css";
 import Cell from "./Cell";
-// import difficultyRows from "./Game";
-import { useEffect, useState } from "react";
-import { useContext } from "react";
+import { useEffect, useState, useContext, useCallback } from "react";
 import { DifficultyContext } from "../DifficultyContext";
 import RestartButton from "./RestartButton";
 
@@ -15,8 +13,12 @@ const Grid = () => {
   const [cellsPerRow, setCellsPerRow] = useState(0);
   const [cellMap, setCellMap] = useState([]);
   const cellTotal = cellsPerRow * cellsPerRow;
+  const [isWon, setIsWon] = useState(false);
 
-  const reset = () => {
+  let isRevealed = false;
+
+  const reset = useCallback(() => {
+    setIsWon(false);
     const result = [...Array(cellTotal)].map((_, i) => ({
       isMine: false,
       isFlagged: false,
@@ -42,18 +44,18 @@ const Grid = () => {
       if (result[mineIndex].isMine) {
         continue;
       }
+
       // console.log(mineIndex, "end of while loop", mineTotal); //console bits
       result[mineIndex].isMine = true;
       counter++;
     }
 
     setCellMap(result);
-    console.log("reset cell map");
-    console.log(difficulty);
-  };
+  }, [cellTotal, difficulty]);
+
   useEffect(() => {
     reset();
-  }, [cellsPerRow, difficulty]);
+  }, [cellsPerRow, difficulty, reset]);
 
   useEffect(() => {
     const difficulties = () => {
@@ -68,113 +70,181 @@ const Grid = () => {
     difficulties();
   }, [difficulty]);
 
-  //check ajacent cells
-  //update cell map
-  //place numbers
+  const surrounding = (cellIndex) => {
+    const result = [];
 
-  let logicIsMine = "";
-  const logicCheck = (cellIndex) => {
-    let mineCounter = 0;
-    const checkSquare = (cellIndex) => {
-      const cell = cellMap[cellIndex];
-      return cell.isMine ? 1 : 0;
-    };
-
-
-    const updateCellList = 4
-    const directional = () => {
-      const Cell = cellMap[cellIndex];
-      //if this cell is not on the right wall, check the right side.
-      const hasRight = cellIndex % cellsPerRow !== cellsPerRow - 1;
-      if (hasRight) {
-        const result = checkSquare(cellIndex + 1);
-        mineCounter += result;
-        console.log(result, "right mine");
-      }
-
-      //if this cell is not on the left wall, check the left side.
-      const hasLeft = cellIndex % cellsPerRow !== 0;
-      if (hasLeft) {
-        const result = checkSquare(cellIndex - 1);
-        mineCounter += result;
-        console.log(result, "left mine");
-      }
-
-      //check the cell above
-      const hasUp = cellIndex - cellsPerRow > -1;
-      if (hasUp) {
-        const result = checkSquare(cellIndex - cellsPerRow);
-        mineCounter += result;
-        console.log(result, "up mine");
-      }
-
-      //check the cell below
-      const hasDown = cellIndex + cellsPerRow < cellTotal;
-      if (hasDown) {
-        const result = checkSquare(cellIndex + cellsPerRow);
-        mineCounter += result;
-        console.log(result, "down mine");
-      }
-
-      if (hasLeft && hasUp) {
-        const result = checkSquare(cellIndex - cellsPerRow - 1);
-        mineCounter += result;
-        console.log(result, "up left mine");
-      }
-
-      if (hasRight && hasUp) {
-        const result = checkSquare(cellIndex - cellsPerRow + 1);
-        mineCounter += result;
-        console.log(result, "up right mine");
-      }
-
-      if (hasLeft && hasDown) {
-        const result = checkSquare(cellIndex + cellsPerRow - 1);
-        mineCounter += result;
-        console.log(result, "down left mine");
-      }
-
-      if (hasRight && hasDown) {
-        const result = checkSquare(cellIndex + cellsPerRow + 1);
-        mineCounter += result;
-        console.log(result, "down right mine");
-      }
-    };
-
-    console.log(mineCounter, "mines present");
-    const updatedMap = cellMap.map((val) => ({
-      ...val,
-      // isRevealed: true,
-      // isFlagged: false,
-    }));
-    updatedMap[cellIndex].mineCount = mineCounter;
-
-    if (mineCounter === 0) {
-      updatedMap[cellIndex].isRevealed = true;
+    const hasLeft = cellIndex % cellsPerRow !== 0;
+    if (hasLeft) {
+      result.push(cellIndex - 1);
     }
-    //************* */
-    setCellMap(updatedMap);
+
+    const hasUp = cellIndex - cellsPerRow > -1;
+    if (hasUp) {
+      result.push(cellIndex - cellsPerRow);
+    }
+
+    const hasRight = cellIndex % cellsPerRow !== cellsPerRow - 1;
+    if (hasRight) {
+      result.push(cellIndex + 1);
+    }
+
+    const hasDown = cellIndex + cellsPerRow < cellTotal;
+    if (hasDown) {
+      result.push(cellIndex + cellsPerRow);
+    }
+
+    //split here!
+
+    const hasUpLeft = hasUp && hasLeft;
+    if (hasUpLeft) {
+      result.push(cellIndex - cellsPerRow - 1);
+    }
+
+    const hasUpRight = hasUp && hasRight;
+    if (hasUpRight) {
+      result.push(cellIndex - cellsPerRow + 1);
+    }
+
+    const hasDownRight = hasDown && hasRight;
+    if (hasDownRight) {
+      result.push(cellIndex + cellsPerRow + 1);
+    }
+
+    const hasDownLeft = hasDown && hasLeft;
+    if (hasDownLeft) {
+      result.push(cellIndex + cellsPerRow - 1);
+    }
+    console.log(result);
+    return result;
+  };
+
+  const logicCheck = (cellIndex, alreadyCheckedCells = []) => {
+    if (alreadyCheckedCells.includes(cellIndex)) {
+      return;
+    }
+    const surroundingIndexes = surrounding(cellIndex);
+    alreadyCheckedCells.push(cellIndex);
+
+    const mineCounter = surroundingIndexes.reduce(
+      (accum, cellIndex) => accum + (cellMap[cellIndex].isMine ? 1 : 0),
+      0
+    );
+
+    console.log(mineCounter, "mine mine mine");
+
+    if (mineCounter > 0) {
+      setCellMap((current) => {
+        const updatedMap = current.map((val, i) => ({
+          ...val,
+        }));
+        updatedMap[cellIndex].mineCount = mineCounter;
+
+        if (mineCounter === 0) {
+          updatedMap[cellIndex].isRevealed = true;
+        }
+        return updatedMap;
+      });
+      return;
+    }
+
+    surroundingIndexes.forEach((cellIndex) => {
+      logicCheck(cellIndex, alreadyCheckedCells);
+    });
+
+    setCellMap((current) => {
+      const updatedMap = current.map((val) => ({
+        ...val,
+      }));
+      updatedMap[cellIndex].mineCount = mineCounter;
+
+      if (mineCounter === 0) {
+        updatedMap[cellIndex].isRevealed = true;
+      }
+      return updatedMap;
+    });
     return;
   };
 
+  let flagCount = 0;
+
+  const winCondition = () => {
+    setCellMap((current) => {
+      const updatedMap = current.map((val) => ({
+        ...val,
+        isRevealed: true,
+      }));
+      return updatedMap;
+    });
+    setIsWon(true);
+    setTimeout(() => {
+      alert("You Win!");
+    }, 100);
+  };
+
+  useEffect(() => {
+    if (!cellMap.length) {
+      return;
+    }
+    if (isWon) {
+      return;
+    }
+    for (let i = 0; i < cellMap.length; i++) {
+      if (!cellMap[i].isMine && cellMap[i].isFlagged) {
+        console.log(cellMap.length);
+        return;
+      }
+      if (cellMap[i].isMine && !cellMap[i].isFlagged) {
+        return;
+      }
+    }
+    console.log("good");
+    winCondition();
+  }, [cellMap]);
+
   const loss = () => {
-    const updatedMap = cellMap.map((val) => ({
-      ...val,
-      isRevealed: true,
-      isFlagged: false,
-    }));
-    setCellMap(updatedMap);
-    // alert("game over!");
+    setCellMap((current) => {
+      const updatedMap = current.map((val) => ({
+        ...val,
+        isRevealed: true,
+        isFlagged: false,
+      }));
+      return updatedMap;
+    });
+    alert("game over!");
     console.log("game over");
   };
   const styles = {
     width: cellsPerRow * cellWidth,
     height: cellsPerRow * cellHeight,
   };
+
+  const markFlag = (i, isFlagged) => {
+    setCellMap((current) => {
+      const updatedMap = current.map((val) => ({
+        ...val,
+      }));
+      updatedMap[i].isFlagged = isFlagged;
+      return updatedMap;
+    });
+  };
+
+  const markRevealed = (i, isRevealed) => {
+    setCellMap((current) => {
+      const updatedMap = current.map((val) => ({
+        ...val,
+      }));
+      updatedMap[i].isRevealed = isRevealed;
+      return updatedMap;
+    });
+  };
+
   return (
     <div className="container" style={styles}>
       {cellMap.map((mined, i) => (
         <Cell
+          markRevealed={markRevealed}
+          markFlag={markFlag}
+          flagCount={mined.flagCount}
           logic={logicCheck}
           loss={loss}
           mineCount={mined.mineCount}

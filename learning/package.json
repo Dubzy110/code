@@ -1,0 +1,11 @@
+{
+  "name": "learning",
+  "version": "1.0.0",
+  "description": "",
+  "main": "test.js",
+  "scripts": {
+    "bun": "bun --watch"
+  },
+  "author": "",
+  "license": "ISC"
+}

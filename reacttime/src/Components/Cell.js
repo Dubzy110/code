@@ -4,37 +4,28 @@ import "./cell.css";
 // if (e.shiftKey && !cell.revealed && bombCount > 0)
 
 const Cell = (props) => {
-  const [isFlagged, setIsFlagged] = useState(false);
-  const [isRevealed, setIsRevealed] = useState(false);
-  const [id, setid] = useState(props.id);
   useEffect(() => {
     if (props.isRevealed) {
-      setIsRevealed(true);
+      props.markRevealed(props.cellIndex, true);
     }
-  }, [props.isRevealed, isRevealed, id]);
-
-  useEffect(() => {
-    if (props.isFlagged) {
-      setIsFlagged(true);
-    }
-  }, [props.isFlagged, isFlagged, id]);
+  }, [props.isRevealed, props.id]);
 
   const cellClick = (e) => {
-    if (e.button === 0 && e.shiftKey && !isRevealed) {
-      setIsFlagged(!isFlagged);
+    if (e.button === 0 && e.shiftKey && !props.isRevealed) {
+      props.markFlag(props.cellIndex, !props.isFlagged);
       return;
-    } else if (e.button === 0 && !isFlagged) {
-      setIsRevealed(true);
+    } else if (e.button === 0 && !props.isFlagged) {
+      props.markRevealed(props.cellIndex, true);
       console.log(props.cellIndex);
       // if its not a mine check squares
-      // if (!props.isMine) {
-      props.logic(props.cellIndex);
-      // }
+      if (!props.isMine) {
+        props.logic(props.cellIndex);
+      }
     }
     //if it is a mine. lose game
     if (
-      (!isRevealed && props.isMine && !isFlagged) ||
-      (isRevealed && props.isMine && !isFlagged)
+      (!props.isRevealed && props.isMine && !props.isFlagged) ||
+      (props.isRevealed && props.isMine && !props.isFlagged)
     ) {
       setTimeout(props.loss, 100);
     }
@@ -43,19 +34,20 @@ const Cell = (props) => {
   return (
     <div
       className={`cell ${
-        isFlagged
+        props.isFlagged
           ? "flagged-cell"
-          : isRevealed
+          : props.isMine
+          ? // && isRevealed
+            "mined-cell"
+          : props.isRevealed
           ? "revealed-cell"
-          : // : isNumbered
-            // ? "isNumbered"
-            ""
+          : ""
       }`}
       style={{ width: props.cellWidth, height: props.cellHeight }}
       onClick={cellClick}
     >
-      {isFlagged ? "X" : ""}
-      {isRevealed && props.isMine ? "!!!" : ""}
+      {props.isFlagged ? "X" : ""}
+      {props.isRevealed && props.isMine ? "!!!" : ""}
       {props.mineCount ? `${props.mineCount}` : ""}
     </div>
   );

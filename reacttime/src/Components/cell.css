@@ -16,5 +16,8 @@
 .revealed-cell {
   background-color: gray;
   font-weight: bolder;
-  color: crimson;
+  color: black;
+}
+.mined-cell {
+  color: red;
 }
