@@ -4,8 +4,11 @@
   "description": "",
   "main": "test.js",
   "scripts": {
-    "bun": "bun --watch"
+    "bun": "bun --watch app.js"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "bun": "^1.1.6"
+  }
 }
