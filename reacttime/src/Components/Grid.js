@@ -15,8 +15,6 @@ const Grid = () => {
   const cellTotal = cellsPerRow * cellsPerRow;
   const [isWon, setIsWon] = useState(false);
 
-  let isRevealed = false;
-
   const reset = useCallback(() => {
     setIsWon(false);
     const result = [...Array(cellTotal)].map((_, i) => ({
@@ -51,7 +49,7 @@ const Grid = () => {
     }
 
     setCellMap(result);
-  }, [cellTotal, difficulty]);
+  }, [cellTotal]);
 
   useEffect(() => {
     reset();
@@ -71,54 +69,55 @@ const Grid = () => {
   }, [difficulty]);
 
   const surrounding = (cellIndex) => {
-    const result = [];
+    const getSurroundingCellIndexes = [];
 
     const hasLeft = cellIndex % cellsPerRow !== 0;
     if (hasLeft) {
-      result.push(cellIndex - 1);
+      getSurroundingCellIndexes.push(cellIndex - 1);
     }
 
     const hasUp = cellIndex - cellsPerRow > -1;
     if (hasUp) {
-      result.push(cellIndex - cellsPerRow);
+      getSurroundingCellIndexes.push(cellIndex - cellsPerRow);
     }
 
     const hasRight = cellIndex % cellsPerRow !== cellsPerRow - 1;
     if (hasRight) {
-      result.push(cellIndex + 1);
+      getSurroundingCellIndexes.push(cellIndex + 1);
     }
 
     const hasDown = cellIndex + cellsPerRow < cellTotal;
     if (hasDown) {
-      result.push(cellIndex + cellsPerRow);
+      getSurroundingCellIndexes.push(cellIndex + cellsPerRow);
     }
 
     //split here!
 
     const hasUpLeft = hasUp && hasLeft;
     if (hasUpLeft) {
-      result.push(cellIndex - cellsPerRow - 1);
+      getSurroundingCellIndexes.push(cellIndex - cellsPerRow - 1);
     }
 
     const hasUpRight = hasUp && hasRight;
     if (hasUpRight) {
-      result.push(cellIndex - cellsPerRow + 1);
+      getSurroundingCellIndexes.push(cellIndex - cellsPerRow + 1);
     }
 
     const hasDownRight = hasDown && hasRight;
     if (hasDownRight) {
-      result.push(cellIndex + cellsPerRow + 1);
+      getSurroundingCellIndexes.push(cellIndex + cellsPerRow + 1);
     }
 
     const hasDownLeft = hasDown && hasLeft;
     if (hasDownLeft) {
-      result.push(cellIndex + cellsPerRow - 1);
+      getSurroundingCellIndexes.push(cellIndex + cellsPerRow - 1);
     }
-    console.log(result);
-    return result;
+    console.log(getSurroundingCellIndexes, "directional options");
+    return getSurroundingCellIndexes;
   };
 
   const logicCheck = (cellIndex, alreadyCheckedCells = []) => {
+    console.log(cellIndex, "onwards!!");
     if (alreadyCheckedCells.includes(cellIndex)) {
       return;
     }
@@ -130,7 +129,7 @@ const Grid = () => {
       0
     );
 
-    console.log(mineCounter, "mine mine mine");
+    // console.log(mineCounter, "mine mine mine");
 
     if (mineCounter > 0) {
       setCellMap((current) => {
@@ -138,10 +137,7 @@ const Grid = () => {
           ...val,
         }));
         updatedMap[cellIndex].mineCount = mineCounter;
-
-        if (mineCounter === 0) {
-          updatedMap[cellIndex].isRevealed = true;
-        }
+        updatedMap[cellIndex].isRevealed = true;
         return updatedMap;
       });
       return;
@@ -164,8 +160,6 @@ const Grid = () => {
     });
     return;
   };
-
-  let flagCount = 0;
 
   const winCondition = () => {
     setCellMap((current) => {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import "./cell.css";
 
 // if (e.shiftKey && !cell.revealed && bombCount > 0)

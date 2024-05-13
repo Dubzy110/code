@@ -2,7 +2,9 @@
   background-color: lightgray;
   border: 1px solid rgb(63, 63, 63);
   text-align: center;
-  /* line-height: 50px; */
+
+  line-height: 42px;
+
   user-select: none;
   -ms-user-select: none;
   -moz-user-select: none;
@@ -10,6 +12,7 @@
 }
 
 .flagged-cell {
+  text-align: center;
   background-color: darkgrey;
   border-color: green;
 }
@@ -19,5 +22,6 @@
   color: black;
 }
 .mined-cell {
+  text-align: center;
   color: red;
 }
